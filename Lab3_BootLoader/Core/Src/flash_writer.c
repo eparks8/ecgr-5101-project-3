@@ -11,7 +11,7 @@ bool in_bounds(uint32_t addr) {
     return (addr >= FLASH_BASE) && (addr < FLASH_END_ADDRESS);
 }
 
-bool erase_region(unsigned int start_addr, unsigned int end_addr) { /* Start at page 32, end at page 512 */
+bool erase_region(unsigned int start_addr, unsigned int end_addr) {
     if (!in_bounds(start_addr) || !in_bounds(end_addr) ||
         start_addr > end_addr ||
         (start_addr % PAGE_SIZE) != 0U ||
@@ -52,7 +52,10 @@ bool erase_region(unsigned int start_addr, unsigned int end_addr) { /* Start at 
 }
 
 static void hardware_write_doubleword(uint32_t address, uint64_t data) {
-    // e.g., HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, address, data);
+    if (!in_bounds(address)) return;
+    HAL_FLASH_Unlock();
+    HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, address, data);
+    HAL_FLASH_Lock();
 }
 
 void flash_writer_init(FlashWriter *writer, uint32_t start_address) {
@@ -61,7 +64,7 @@ void flash_writer_init(FlashWriter *writer, uint32_t start_address) {
     writer->current_address = start_address;
 }
 
-void flash_writer_push_byte(FlashWriter *writer, uint8_t byte) {
+void flash_writer_push(FlashWriter *writer, uint8_t byte) {
     // Clear the target byte slot and insert the incoming byte (little-endian)
     uint64_t mask = ~(0xFFULL << (writer->buffer_offset * 8));
     writer->buffer = (writer->buffer & mask) | ((uint64_t)byte << (writer->buffer_offset * 8));
