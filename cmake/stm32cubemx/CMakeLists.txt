@@ -34,6 +34,7 @@ set(MX_Application_Src
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Core/Src/syscalls.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../startup_stm32l496xx.s
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Core/Src/flash_writer.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../Core/Src/flash_test.c
 )
 
 # STM32 HAL/LL Drivers
