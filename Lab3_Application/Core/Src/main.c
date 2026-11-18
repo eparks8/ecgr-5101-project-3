@@ -8,6 +8,12 @@
 #define BLINK_DELAY_MS 500
 #endif
 
+/* NUCLEO-L496ZG user LED LD1 (green) is on PC7. */
+#ifndef LD1_Pin
+#define LD1_Pin       GPIO_PIN_7
+#define LD1_GPIO_Port GPIOC
+#endif
+
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 
@@ -36,7 +42,7 @@ static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
 
-  __HAL_RCC_GPIOD_CLK_ENABLE();
+  __HAL_RCC_GPIOC_CLK_ENABLE();
 
   HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_RESET);
 
