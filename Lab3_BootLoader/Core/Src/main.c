@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 #include "main.h"
 #include "usb_device.h"
 #include "usbd_core.h"
@@ -105,6 +106,8 @@ void JumpToApplication(void)
   while (1) { }
 }
 =======
+=======
+>>>>>>> 8274ffea627d5dcf4af9624ef5b41a21eb2b2986
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
@@ -401,4 +404,7 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
+<<<<<<< HEAD
 >>>>>>> 8274ffe (File restructuring)
+=======
+>>>>>>> 8274ffea627d5dcf4af9624ef5b41a21eb2b2986
