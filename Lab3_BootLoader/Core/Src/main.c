@@ -1,12 +1,17 @@
 #include "main.h"
 #include "usb_device.h"
 #include "usbd_core.h"
+#include "usb_rx.h"
+#include "update_mode.h"
+#include "boot_protocol.h"
 
 /* ---- Requirement 4: jump to the application ------------------------------ */
 #define APP_ADDRESS  0x08010000UL   /* Must match ORIGIN in Lab3_Application's linker script */
 
 extern USBD_HandleTypeDef hUsbDeviceFS;
 void JumpToApplication(void);
+void SystemClock_Config(void);
+void MX_GPIO_Init(void);
 /* ------------------------------------------------------------------------- */
 
 int main(void)
@@ -14,23 +19,25 @@ int main(void)
   HAL_Init();
   SystemClock_Config();
   MX_GPIO_Init();
+  usb_rx_clear();
+  update_mode_init();
+  boot_protocol_init();
   MX_USB_DEVICE_Init();   /* Starts USB enumeration - your laptop will show a new
                               virtual COM port once this call returns. */
 
-  /* TODO (Requirement 1): Decide here how the bootloader knows a new firmware
-     image is about to arrive, versus just sitting idle until the user button
-     is pressed (Requirement 4). A timeout window measured from this point,
-     or a flag left behind by the application, are both reasonable options. */
+  /* The update window starts after USB configuration, not before enumeration.
+     LD3 blinks while a start marker may be accepted. */
 
   while (1)
   {
-    /* TODO (Requirement 1, continued): Incoming USB bytes do not show up here
-       automatically - they arrive in CDC_Receive_FS(), inside
-       USB_DEVICE/App/usbd_cdc_if.c, which CubeMX already generated for you.
-       You will need a way to get bytes from that callback into this loop
-       (for example, a shared buffer and a flag), or do your flash
-       programming directly from within that callback instead. Either way,
-       figure out how you'll recognize when the full image has arrived. */
+    update_mode_poll(HAL_GetTick(),
+                     hUsbDeviceFS.dev_state == USBD_STATE_CONFIGURED);
+    HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin,
+                      update_mode_led_on() ? GPIO_PIN_SET : GPIO_PIN_RESET);
+
+    boot_protocol_poll(HAL_GetTick(),
+                       hUsbDeviceFS.dev_state == USBD_STATE_CONFIGURED,
+                       update_mode_accepting_start());
 
     /* TODO (Requirement 2): Once you have erased the application's flash
        region and accumulated a full aligned double word of incoming bytes,
@@ -40,7 +47,9 @@ int main(void)
 
     /* Requirement 4: User button (B1, PC13) leaves the bootloader and starts
        the application. B1 reads high while pressed on the Nucleo-144. */
-    if (HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_SET)
+    if (!update_mode_accepting_start() &&
+        !boot_protocol_blocks_jump() &&
+        HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_SET)
     {
       JumpToApplication();
     }
