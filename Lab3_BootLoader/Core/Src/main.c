@@ -1,4 +1,6 @@
 #include "main.h"
+#include "flash_writer.h"
+#include "flash_test.h"
 #include "usb_device.h"
 #include "usbd_core.h"
 #include "usb_rx.h"
@@ -27,7 +29,8 @@ int main(void)
 
   /* The update window starts after USB configuration, not before enumeration.
      LD3 blinks while a start marker may be accepted. */
-
+   erase_test();
+   write_test();
   while (1)
   {
     update_mode_poll(HAL_GetTick(),
