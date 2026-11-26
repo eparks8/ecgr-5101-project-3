@@ -49,6 +49,8 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     Core/Src/update_mode.c
     Core/Src/boot_protocol.c
     Core/Src/board_init.c
+    Core/Src/flash_writer.c
+    Core/Src/flash_test.c
 )
 
 # Add include paths
